@@ -43,8 +43,26 @@ def add(ctx, track):
     util.ensure_playlist_exists(playlist_path)
 
     playlist = Playlist.parse(playlist_path)
-    playlist.trackList.append(Track(location=track))
+    track = util.get_track_from_file(track)
+
+    if track is None:
+        print("can't add track: invalid file")
+        sys.exit(1)
+
+    playlist.trackList.append(track)
     util.save_playlist(playlist, playlist_path)
 
 
+@xspf.command()
+@click.pass_context
+def update_metadata(ctx):
+    """Updates the meta data of the tracks based on tags of the files."""
+    playlist_path = ctx.obj.playlist
+
+    util.ensure_playlist_exists(playlist_path)
+
+    playlist = Playlist.parse(playlist_path)
+    playlist.trackList = list(map(util.update_metadata, playlist.trackList))
+
+    util.save_playlist(playlist, playlist_path)
 
