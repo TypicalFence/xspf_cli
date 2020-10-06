@@ -54,6 +54,24 @@ def add(ctx, track):
 
 
 @xspf.command()
+@click.argument("track_number", type=click.INT)
+@click.pass_context
+def remove(ctx, track_number):
+    """Removes a track from a playlist."""
+    playlist_path = ctx.obj.playlist
+
+    util.ensure_playlist_exists(playlist_path)
+
+    playlist = Playlist.parse(playlist_path)
+
+    if len(playlist.trackList) >= track_number - 1:
+        del playlist.trackList[track_number - 1]
+    else:
+        sys.exit(1)
+
+    util.save_playlist(playlist, playlist_path)
+
+@xspf.command()
 @click.pass_context
 def update_metadata(ctx):
     """Updates the meta data of the tracks based on tags of the files."""
@@ -65,4 +83,19 @@ def update_metadata(ctx):
     playlist.trackList = list(map(util.update_metadata, playlist.trackList))
 
     util.save_playlist(playlist, playlist_path)
+
+
+@xspf.command()
+@click.pass_context
+def show(ctx):
+    """Displays the playlist."""
+    playlist_path = ctx.obj.playlist
+
+    util.ensure_playlist_exists(playlist_path)
+
+    playlist = Playlist.parse(playlist_path)
+
+    for idx, track in enumerate(playlist.trackList):
+        print("[{}]\t{} - {}".format(
+            idx + 1, track.creator, track.title))
 
